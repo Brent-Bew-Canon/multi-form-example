@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricebook Wizard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .form-container {
+            max-width: 500px;
+            margin: auto;
+            margin-top: 50px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+
+        .form-step {
+            display: none;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
+        .selected-items {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: #fff;
+        }
+
+        .selected-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .selected-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+
+<body class="d-flex justify-content-center bg-light">
+    <div class="form-container text-center mb-4 pb-4">
+        <h1 class="mb-4 text-primary">Pricebook Wizard</h1>
+        <hr>
+
+        <form id="multiStepForm">
+            <div class="form-step active" id="step1">
+                <h3>Add your Complex Set Groups</h3>
+                <p>Complex set groups are visual groupings of products and services. They are used to visually break up
+                    your
+                    items on the point of sale, on contracts, and inside the pricebook setttings.
+                </p>
+                <div class="mt-4 mb-4">
+
+                    <iframe width="100%" height="315"
+                        src="https://www.youtube.com/embed/14dANHmhnNk?si=ZEj_EnmVQJeSdPiF" title="YouTube video player"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </div>
+
+                <label for="preset-groups" class="form-label">Add Preset Groups:</label>
+                <select id="preset-groups" class="form-control" multiple>
+                    <option value="Base Pool">Base Pool</option>
+                    <option value="Permits">Permits</option>
+                    <option value="Pool Lighting">Pool Lighting</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="Steel">Steel</option>
+                    <option value="Spa">Spa</option>
+                </select>
+                <div class="mt-4">
+                    <label for="customName" class="form-label">Add Custom Groups:</label>
+                    <input type="text" id="customName" name="customName" class="form-control mt-2"
+                        placeholder="Type custom group...">
+                </div>
+                <button type="button" class="btn btn-secondary mt-2" onclick="addSelectedItems()">Add</button>
+                <div class="mt-4 fw-bold">
+                    <label for="selectedItems" class="form-label">Current Groups:</label>
+                </div>
+                <div id="selectedItems" name="selectedItems" class="selected-items mt-3"></div>
+                <button type="button" class="btn btn-primary mt-3" onclick="nextStep(1)">Next</button>
+            </div>
+
+            <div class="form-step" id="step2">
+                <h3>Add your Products and Services</h3>
+                <p>Products and services are all of the items that need to be completed on a project. These can be
+                    products and service you provide, or they can be services your sub contractors provide. For example:
+                    Tile
+                    might consist of Tile Material (the
+                    product) and Tile Install (the service)
+                </p>
+                <!-- <p>In the example above of Tile, simply type in "Tile" and mark it as both a product and service.
+                </p> -->
+                <div class="mt-4 mb-4">
+
+                    <iframe width="100%" height="315"
+                        src="https://www.youtube.com/embed/F7PeZojQjrE?si=baI5Q0Xi7WnB1zqk" title="YouTube video player"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </div>
+                <div class="mt-4">
+                    <label for="preset-stock" class="form-label">Add Preset Stock:</label>
+                    <select id="preset-stock" class="form-control" multiple>
+                        <option value="Tile">Tile</option>
+                        <option value="Coping">Coping</option>
+                        <option value="Lights">Lights</option>
+                        <option value="Engineering">Engineering</option>
+                        <option value="Steel">Steel</option>
+                        <option value="Spa Plumbing">Spa Plumbing</option>
+                    </select>
+                </div>
+                <div class="mt-4">
+                    <label for="customStock" class="form-label">Add Custom Stock:</label>
+                    <input type="text" id="customStock" name="customStock" class="form-control mt-2"
+                        placeholder="Type custom stock...">
+                </div>
+                <div id="category-selector" class="mt-4">
+                    <!-- Categories for product, service, or both -->
+                </div>
+                <button type="button" class="btn btn-secondary mt-2" onclick="addSelectedStock()">Add</button>
+
+                <div class="mt-4 fw-bold">
+                    <label for="selectedItems" class="form-label">Current Stock:</label>
+                </div>
+                <div id="selectedStock" name="selectedItems" class="selected-items mt-3"></div>
+
+                <button type="button" class="btn btn-secondary mt-3" onclick="prevStep(0)">Back</button>
+                <button type="submit" class="btn btn-success mt-3">Build Pricebook</button>
+            </div>
+
+            <div class="form-step" id="step3">
+                <label for="phone" class="form-label">Phone:</label>
+                <input type="tel" id="phone" class="form-control" required>
+                <button type="button" class="btn btn-secondary mt-3" onclick="prevStep(1)">Back</button>
+
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let currentStep = 0;
+        const steps = document.querySelectorAll(".form-step");
+        let selectedItems = [];
+        let selectedStockItems = [];
+
+        function showStep(step) {
+            steps.forEach((el, index) => {
+                el.classList.toggle("active", index === step);
+            });
+        }
+
+        function nextStep(step) {
+            if (step < steps.length) {
+                currentStep = step;
+                showStep(currentStep);
+            }
+        }
+
+        function prevStep(step) {
+            if (step >= 0) {
+                currentStep = step;
+                showStep(currentStep);
+            }
+        }
+
+        function addSelectedItems() {
+            const select = document.getElementById("preset-groups");
+            const customInput = document.getElementById("customName");
+            const selectedOptions = Array.from(select.selectedOptions).map(option => option.value);
+            const newValue = customInput.value.trim();
+
+            selectedOptions.forEach(option => {
+                if (!selectedItems.includes(option)) {
+                    selectedItems.push(option);
+                }
+            });
+
+            if (newValue && !selectedItems.includes(newValue)) {
+                selectedItems.push(newValue);
+            }
+
+            updateSelectedItems();
+            customInput.value = "";
+        }
+
+        function updateSelectedItems() {
+            const selectedItemsDiv = document.getElementById("selectedItems");
+            selectedItemsDiv.innerHTML = "";
+
+            selectedItems.forEach((item, index) => {
+                let itemDiv = document.createElement("div");
+                itemDiv.classList.add("selected-item");
+                itemDiv.innerHTML = `${item} <button class='btn btn-sm btn-danger' onclick='removeItem(${index})'>X</button>`;
+                selectedItemsDiv.appendChild(itemDiv);
+            });
+        }
+
+        function removeItem(index) {
+            selectedItems.splice(index, 1);
+            updateSelectedItems();
+        }
+
+
+        function addSelectedStock() {
+            const select = document.getElementById("preset-stock");
+            const customInput = document.getElementById("customStock");
+            const selectedOptions = Array.from(select.selectedOptions).map(option => option.value);
+            const newValue = customInput.value.trim();
+
+            selectedOptions.forEach(option => {
+                if (!selectedStockItems.some(item => item.name === option)) {
+                    selectedStockItems.push({ name: option, category: "Both" }); // Default to "Both"
+                }
+            });
+
+            if (newValue && !selectedStockItems.some(item => item.name === newValue)) {
+                selectedStockItems.push({ name: newValue, category: "Both" });
+            }
+
+            updateSelectedStock();
+            customInput.value = "";
+        }
+
+        function updateSelectedStock() {
+            const selectedStockItemsDiv = document.getElementById("selectedStock");
+            selectedStockItemsDiv.innerHTML = "";
+
+            selectedStockItems.forEach((item, index) => {
+                let itemDiv = document.createElement("div");
+                itemDiv.classList.add("selected-item");
+
+                // Create a dropdown for categorizing items
+                itemDiv.innerHTML = `
+                    ${item.name}
+                    <select onchange="updateCategory(${index}, this.value)">
+                        <option value="Product" ${item.category === "Product" ? "selected" : ""}>Product</option>
+                        <option value="Service" ${item.category === "Service" ? "selected" : ""}>Service</option>
+                        <option value="Both" ${item.category === "Both" ? "selected" : ""}>Product and Service</option>
+                    </select>
+                    <select onchange="updateCategory(${index}, this.value)">
+                        <option value="Product" ${item.category === "Product" ? "selected" : ""}>Base Pool</option>
+                        <option value="Service" ${item.category === "Service" ? "selected" : ""}>Permits</option>
+                        <option value="Both" ${item.category === "Both" ? "selected" : ""}>Pool</option>
+                        <option value="Both" ${item.category === "Both" ? "selected" : ""}>Steel</option>
+                        <option value="Both" ${item.category === "Both" ? "selected" : ""}>Tile & Coping</option>
+                    </select>
+                    <button class='btn btn-sm btn-danger' onclick='removeStock(${index})'>X</button>
+                `;
+                selectedStockItemsDiv.appendChild(itemDiv);
+            });
+        }
+
+        function updateCategory(index, category) {
+            selectedStockItems[index].category = category;
+        }
+
+        function removeStock(index) {
+            selectedStockItems.splice(index, 1);
+            updateSelectedStock();
+        }
+    </script>
+</body>
+
+</html>
